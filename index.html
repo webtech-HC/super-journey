@@ -3,113 +3,97 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Vertical Pulse Lines — 5-Line (Yellow + Down/Up Cycle)</title>
+<title>Vertical Pulse Lines — 5-Line (Tuned)</title>
 
-<!-- Animate.css (v4) -->
+<!-- Animate.css (v4) for soft entrance -->
 <link rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <style>
-  /* Reset */
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* ===== Tokens (easy tweaks) ===== */
+  :root{
+    --bg:#1D1D1D;
+    --line:#FFFFFF33;        /* base line opacity */
+    --acc:#FFD400;           /* accent yellow */
+    --width:max(82vw, 960px);/* field width */
+    --line-w:2px;            /* line width */
+    --pulse-len:20vh;        /* pulse length */
+    --pulse-speed:9s;        /* slower = calmer */
+    --pulse-blur:18px;       /* glow softness */
+  }
 
-  html, body { height: 100%; }
+  /* Page shell */
+  html,body{height:100%}
   body{
-    display: table;
-    width: 100%;
-    height: 100%;
-    background-color: #171717;  /* dark background */
-    color: #000;
-    line-height: 1.6;
-    position: relative;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    overflow: hidden;            /* hide pulses as they leave viewport */
+    margin:0; background:var(--bg); overflow:hidden;
+    font:400 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial;
   }
 
   /* Field of lines */
   .lines{
-    position: absolute;
-    inset: 0 auto 0 auto;
-    height: 100%;
-    margin: auto;
-    width: 90vw;                 /* adjust field width if you want wider/narrower */
+    position:absolute; inset:0; margin:auto; height:100%;
+    width:var(--width);
+    display:flex; justify-content:space-between; align-items:stretch;
   }
 
   /* Single line */
   .line{
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    top: 0;
-    left: 50%;
-    background: rgba(255,255,255,0.16); /* slightly brighter base line */
-    overflow: hidden;
+    position:relative; width:var(--line-w); height:100%;
+    background:var(--line); border-radius:1px; overflow:hidden;
+    /* tiny sway so it feels alive but not busy */
+    animation: sway calc(12s + (var(--i)*.4s)) ease-in-out infinite alternate;
   }
 
-  /* Traveling pulse (yellow), now with down → pause → up → pause cycle */
+  /* Two pulses per line (before/after) */
+  .line::before,
   .line::after{
-    content: '';
-    position: absolute;
-    left: 0; width: 100%;
-    height: 20vh;                /* a touch longer for readability */
-    top: -50%;                   /* start above */
+    content:""; position:absolute; left:0; width:100%;
+    height:var(--pulse-len); top:-40vh; opacity:1;
+    /* bright white → yellow → soft tail */
     background: linear-gradient(
       to bottom,
       rgba(255,255,255,0) 0%,
       rgba(255,255,255,.70) 22%,
-      #FFD400 70%,
+      var(--acc) 66%,
       rgba(255,212,0,.28) 100%
     );
-    filter: blur(18px);
-    animation-name: dropRise;    /* new cycle animation */
-    animation-duration: 12s;     /* slower + includes pauses */
-    animation-delay: 0s;
+    filter: blur(var(--pulse-blur));
+    /* longhand animation props = more robust across builders */
+    animation-name: dropY;
+    animation-duration: calc(var(--pulse-speed) + (var(--i)*.25s));
+    animation-delay: calc(var(--i)*-.20s);
+    animation-timing-function: cubic-bezier(.4,.26,0,.97);
     animation-iteration-count: infinite;
     animation-fill-mode: both;
-    animation-timing-function: cubic-bezier(0.4,0.26,0,0.97);
+    will-change: top;
+  }
+  /* second pulse per line (offset) */
+  .line::after{
+    animation-duration: calc(var(--pulse-speed) + (var(--i)*.25s) + 1.4s);
+    animation-delay: calc((var(--i)*-.20s) + .9s);
   }
 
-  /* Position the 5 lines around the center */
-  .line:nth-child(1){ margin-left: -40%; }  /* far left  */
-  .line:nth-child(2){ margin-left: -20%; }  /* left      */
-  .line:nth-child(3){ margin-left:   0%; }  /* center    */
-  .line:nth-child(4){ margin-left:  20%; }  /* right     */
-  .line:nth-child(5){ margin-left:  40%; }  /* far right */
+  /* Keyframes */
+  @keyframes dropY { 0%{ top:-40vh } 100%{ top:110vh } }
+  @keyframes sway  { to { transform: translateX(2px) } }
 
-  /* Stagger pulse start times for variety (kept from your version) */
-  .line:nth-child(1)::after{ animation-delay: 1.6s; }
-  .line:nth-child(2)::after{ animation-delay: 2.0s; }
-  .line:nth-child(3)::after{ animation-delay: 2.3s; }
-  .line:nth-child(4)::after{ animation-delay: 2.6s; }
-  .line:nth-child(5)::after{ animation-delay: 2.9s; }
-
-  /* Down → pause → Up → pause */
-  @keyframes dropRise {
-    0%   { top: -50%; }
-    40%  { top: 110%; }  /* fall */
-    50%  { top: 110%; }  /* pause at bottom */
-    90%  { top: -50%; }  /* rise */
-    100% { top: -50%; }  /* pause at top */
-  }
-
-  /* Respect reduced motion */
+  /* Reduced motion: remove if you always want motion */
   @media (prefers-reduced-motion: reduce){
-    .line::after{ animation: none !important; }
+    .line, .line::before, .line::after{ animation:none !important }
   }
 </style>
 </head>
 <body>
 
-  <!-- Animate.css entrance effects (optional) -->
+  <!-- Entrance (Animate.css) + five lines with stagger seed via --i -->
   <div class="lines animate__animated animate__fadeIn animate__slower"
-       style="--animate-duration:1.6s;">
-    <div class="line animate__animated animate__fadeInLeft"  style="--animate-delay:.10s;"></div>
-    <div class="line animate__animated animate__fadeInLeft"  style="--animate-delay:.20s;"></div>
-    <div class="line animate__animated animate__fadeInDown"  style="--animate-delay:.30s;"></div>
-    <div class="line animate__animated animate__fadeInRight" style="--animate-delay:.40s;"></div>
-    <div class="line animate__animated animate__fadeInRight" style="--animate-delay:.50s;"></div>
+       style="--animate-duration:1.4s;">
+    <span class="line animate__animated animate__fadeInLeft"  style="--i:0; --animate-delay:.10s"></span>
+    <span class="line animate__animated animate__fadeInLeft"  style="--i:1; --animate-delay:.20s"></span>
+    <span class="line animate__animated animate__fadeInDown"  style="--i:2; --animate-delay:.30s"></span>
+    <span class="line animate__animated animate__fadeInRight" style="--i:3; --animate-delay:.40s"></span>
+    <span class="line animate__animated animate__fadeInRight" style="--i:4; --animate-delay:.50s"></span>
   </div>
 
 </body>
 </html>
-
