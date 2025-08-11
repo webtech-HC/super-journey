@@ -3,96 +3,105 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Vertical Pulse Lines — 5-Line (Tuned)</title>
+<title>Vertical Pulse Lines — 5-Line Version</title>
 
-<!-- Animate.css (v4) for soft entrance -->
+<!-- Animate.css (v4) -->
 <link rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <style>
-  /* ===== Tokens (easy tweaks) ===== */
-  :root{
-    --bg:#1D1D1D;
-    --line:#FFFFFF33;        /* base line opacity */
-    --acc:#FFD400;           /* accent yellow */
-    --width:max(82vw, 960px);/* field width */
-    --line-w:2px;            /* line width */
-    --pulse-len:20vh;        /* pulse length */
-    --pulse-speed:9s;        /* slower = calmer */
-    --pulse-blur:18px;       /* glow softness */
-  }
+  /* Reset */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  /* Page shell */
-  html,body{height:100%}
+  html, body { height: 100%; }
   body{
-    margin:0; background:var(--bg); overflow:hidden;
-    font:400 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    display: table;
+    width: 100%;
+    height: 100%;
+    background-color: #171717;  /* dark background */
+    color: #000;
+    line-height: 1.6;
+    position: relative;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    overflow: hidden;            /* hide pulses as they leave viewport */
   }
 
   /* Field of lines */
   .lines{
-    position:absolute; inset:0; margin:auto; height:100%;
-    width:var(--width);
-    display:flex; justify-content:space-between; align-items:stretch;
+    position: absolute;
+    inset: 0 auto 0 auto;
+    height: 100%;
+    margin: auto;
+    width: 90vw;                 /* adjust field width if you want wider/narrower */
   }
 
   /* Single line */
   .line{
-    position:relative; width:var(--line-w); height:100%;
-    background:var(--line); border-radius:1px; overflow:hidden;
-    /* tiny sway so it feels alive but not busy */
-    animation: sway calc(12s + (var(--i)*.4s)) ease-in-out infinite alternate;
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    top: 0;
+    left: 50%;
+    background: rgba(255,255,255,0.12);
+    overflow: hidden;
   }
 
-  /* Two pulses per line (before/after) */
-  .line::before,
+  /* Traveling pulse */
   .line::after{
-    content:""; position:absolute; left:0; width:100%;
-    height:var(--pulse-len); top:-40vh; opacity:1;
-    /* bright white → yellow → soft tail */
+    content: '';
+    position: absolute;
+    left: 0; width: 100%;
+    height: 15vh;                /* pulse length */
+    top: -50%;                   /* start above */
     background: linear-gradient(
       to bottom,
       rgba(255,255,255,0) 0%,
-      rgba(255,255,255,.70) 22%,
-      var(--acc) 66%,
-      rgba(255,212,0,.28) 100%
+      #ffffff 75%,
+      #ffffff 100%
     );
-    filter: blur(var(--pulse-blur));
-    /* longhand animation props = more robust across builders */
-    animation-name: dropY;
-    animation-duration: calc(var(--pulse-speed) + (var(--i)*.25s));
-    animation-delay: calc(var(--i)*-.20s);
-    animation-timing-function: cubic-bezier(.4,.26,0,.97);
+    animation-name: drop;
+    animation-duration: 7s;
+    animation-delay: 0s;
     animation-iteration-count: infinite;
-    animation-fill-mode: both;
-    will-change: top;
-  }
-  /* second pulse per line (offset) */
-  .line::after{
-    animation-duration: calc(var(--pulse-speed) + (var(--i)*.25s) + 1.4s);
-    animation-delay: calc((var(--i)*-.20s) + .9s);
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
   }
 
-  /* Keyframes */
-  @keyframes dropY { 0%{ top:-40vh } 100%{ top:110vh } }
-  @keyframes sway  { to { transform: translateX(2px) } }
+  /* Position the 5 lines around the center */
+  .line:nth-child(1){ margin-left: -40%; }  /* far left  */
+  .line:nth-child(2){ margin-left: -20%; }  /* left      */
+  .line:nth-child(3){ margin-left:   0%; }  /* center    */
+  .line:nth-child(4){ margin-left:  20%; }  /* right     */
+  .line:nth-child(5){ margin-left:  40%; }  /* far right */
 
-  /* Reduced motion: remove if you always want motion */
+  /* Stagger pulse start times for variety */
+  .line:nth-child(1)::after{ animation-delay: 1.6s; }
+  .line:nth-child(2)::after{ animation-delay: 2.0s; }
+  .line:nth-child(3)::after{ animation-delay: 2.3s; }
+  .line:nth-child(4)::after{ animation-delay: 2.6s; }
+  .line:nth-child(5)::after{ animation-delay: 2.9s; }
+
+  @keyframes drop {
+    0%   { top: -50%; }
+    100% { top: 110%; }
+  }
+
+  /* Respect reduced motion */
   @media (prefers-reduced-motion: reduce){
-    .line, .line::before, .line::after{ animation:none !important }
+    .line::after{ animation: none !important; }
   }
 </style>
 </head>
 <body>
 
-  <!-- Entrance (Animate.css) + five lines with stagger seed via --i -->
+  <!-- Animate.css entrance effects (optional) -->
   <div class="lines animate__animated animate__fadeIn animate__slower"
-       style="--animate-duration:1.4s;">
-    <span class="line animate__animated animate__fadeInLeft"  style="--i:0; --animate-delay:.10s"></span>
-    <span class="line animate__animated animate__fadeInLeft"  style="--i:1; --animate-delay:.20s"></span>
-    <span class="line animate__animated animate__fadeInDown"  style="--i:2; --animate-delay:.30s"></span>
-    <span class="line animate__animated animate__fadeInRight" style="--i:3; --animate-delay:.40s"></span>
-    <span class="line animate__animated animate__fadeInRight" style="--i:4; --animate-delay:.50s"></span>
+       style="--animate-duration:1.6s;">
+    <div class="line animate__animated animate__fadeInLeft"  style="--animate-delay:.10s;"></div>
+    <div class="line animate__animated animate__fadeInLeft"  style="--animate-delay:.20s;"></div>
+    <div class="line animate__animated animate__fadeInDown"  style="--animate-delay:.30s;"></div>
+    <div class="line animate__animated animate__fadeInRight" style="--animate-delay:.40s;"></div>
+    <div class="line animate__animated animate__fadeInRight" style="--animate-delay:.50s;"></div>
   </div>
 
 </body>
